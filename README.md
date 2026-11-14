@@ -16,6 +16,26 @@ The project aims to investigate road collision patterns, classify collision seve
 - Apply clustering techniques for geographical and collision-profile analysis.
 - Build an interactive dashboard to communicate findings.
 
+## Repository Structure
+
+```text
+RoadSafe-Analytics/
+├── data/
+│   ├── raw/          # Original datasets (not tracked by Git)
+│   ├── interim/      # Intermediate datasets
+│   └── processed/    # Cleaned, analysis-ready datasets
+├── notebooks/        # Jupyter notebooks
+├── src/              # Reusable Python modules
+├── models/           # Trained models and pipelines
+├── reports/
+│   └── figures/      # Visualizations and plots
+├── app/              # Streamlit dashboard
+├── tests/            # Automated tests
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
+
 ## Dataset
 
 **Source:** UK Department for Transport (STATS19)
@@ -35,6 +55,49 @@ The project uses three related datasets:
 | Casualties | 127,883 |
 
 The original datasets are not included in this repository. They can be obtained from the official source.
+
+## Data Understanding & Quality Assessment
+
+An initial data audit was conducted using the official 2025 STATS19 datasets and the Department for Transport data dictionary.
+
+### Dataset Overview
+
+| Dataset | Records | Columns |
+|---|---:|---:|
+| Collisions | 101,525 | 44 |
+| Vehicles | 183,948 | 32 |
+| Casualties | 127,883 | 24 |
+
+**Total:** 413,356 records across three related datasets.
+
+### Key Findings
+
+- **Missing Values:** Eight conventional missing cells were identified across four geographical columns in the collision dataset.
+- **Coded Missing Values:** Several variables contain special codes representing unknown, unavailable, deprecated, or historically inapplicable information.
+- **Deprecated and Unavailable Features:** local_authority_district is deprecated, while age_of_vehicle contains -1 in all 2025 vehicle records and requires further investigation.
+- **Categorical Encoding:** Many categorical attributes are stored as numerical codes and require interpretation using the official data dictionary.
+- **Duplicate Records:** No exact duplicate rows were detected in any dataset.
+- **Identifier Integrity:** All 101,525 collision identifiers are consistently represented across the three datasets.
+- **Composite Keys:** Vehicle and casualty composite identifiers were verified to be unique.
+- **Referential Integrity:** No unmatched casualty-to-vehicle references were detected.
+
+### Key Challenges Identified
+
+1. Column-specific handling of coded missing and unknown values.
+2. Identification of deprecated and historical variables.
+3. Decoding categorical attributes.
+4. Handling missing geographical coordinates.
+5. Preventing target leakage during predictive modelling.
+6. Preserving relational integrity during data integration.
+
+### Notebook
+
+The complete data-understanding process, Python code, inspection results, and documented observations are available in:
+
+[01_data_understanding.ipynb](notebooks/01_data_understanding.ipynb)
+
+**Next Phase:** Data Cleaning & Preprocessing.
+
 
 ## Machine Learning Tasks
 
@@ -64,9 +127,22 @@ Estimate the number of casualties per reported collision.
 
 ## Project Status
 
-**Current Phase:** Environment Setup
+**Current Phase:** Stage 3 — Data Acquisition & Understanding (Completed)
 
-The project is under active development.
+### Completed Stages
+
+- [x] Stage 1: Project Planning & Problem Definition
+- [x] Stage 2: Environment Setup & GitHub Repository
+- [x] Stage 3: Data Acquisition & Understanding
+- [ ] Stage 4: Data Cleaning & Preprocessing
+- [ ] Stage 5: Data Integration & Feature Engineering
+- [ ] Stage 6: Exploratory Data Analysis
+- [ ] Stage 7: Regression Modelling
+- [ ] Stage 8: Classification Modelling
+- [ ] Stage 9: Clustering Analysis
+- [ ] Stage 10: Model Optimization & Interpretability
+- [ ] Stage 11: Interactive Dashboard Development
+- [ ] Stage 12: Final Documentation & Release
 
 ## Limitations
 
