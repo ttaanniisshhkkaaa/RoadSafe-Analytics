@@ -3,51 +3,27 @@ from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from roadsafe_cleaning import clean_dataframe
-
-
-def test_column_names_are_cleaned():
-    df = pd.DataFrame({
-        "Person Name": ["Piyush"],
-        "Age-Value": [20]
-    })
-
-    result = clean_dataframe(df)
-
-    assert "person_name" in result.columns
-    assert "age_value" in result.columns
+from cleaning_utils import clean_common
 
 
-def test_duplicate_rows_are_removed():
-    df = pd.DataFrame({
-        "name": ["A", "A"],
-        "age": [20, 20]
-    })
+def test_column_names_are_standardized():
+    result = clean_common(pd.DataFrame({"Accident Index": ["A1"]}))
+    assert "accident_index" in result.columns
 
-    result = clean_dataframe(df)
 
+def test_duplicates_are_removed():
+    result = clean_common(pd.DataFrame({"id": [1, 1], "value": ["x", "x"]}))
     assert len(result) == 1
 
 
-def test_empty_rows_are_removed():
-    df = pd.DataFrame({
-        "name": ["A", None],
-        "age": [20, None]
-    })
-
-    result = clean_dataframe(df)
-
-    assert len(result) == 1
+def test_blank_values_become_missing():
+    result = clean_common(pd.DataFrame({"value": ["", "N/A", "valid"]}))
+    assert result["value"].isna().sum() == 2
 
 
-def test_spaces_are_removed_from_text():
-    df = pd.DataFrame({
-        "name": ["  Piyush  "]
-    })
+def test_text_spaces_are_removed():
+    result = clean_common(pd.DataFrame({"name": ["  road  "]}))
+    assert result.loc[0, "name"] == "road"
 
-    result = clean_dataframe(df)
-
-    assert result.iloc[0]["name"] == "Piyush"
