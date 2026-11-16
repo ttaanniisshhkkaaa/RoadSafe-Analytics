@@ -127,14 +127,14 @@ Estimate the number of casualties per reported collision.
 
 ## Project Status
 
-**Current Phase:** Stage 3 — Data Acquisition & Understanding (Completed)
+***Current Phase:** Stage 4 — Data Cleaning & Preprocessing (Completed)
 
 ### Completed Stages
 
 - [x] Stage 1: Project Planning & Problem Definition
 - [x] Stage 2: Environment Setup & GitHub Repository
 - [x] Stage 3: Data Acquisition & Understanding
-- [ ] Stage 4: Data Cleaning & Preprocessing
+- [x] Stage 4: Data Cleaning & Preprocessing
 - [ ] Stage 5: Data Integration & Feature Engineering
 - [ ] Stage 6: Exploratory Data Analysis
 - [ ] Stage 7: Regression Modelling
@@ -144,6 +144,24 @@ Estimate the number of casualties per reported collision.
 - [ ] Stage 11: Interactive Dashboard Development
 - [ ] Stage 12: Final Documentation & Release
 
+**Next Phase:** Data Integration & Feature Engineering.
+
+The cleaning notebook is available at:
+
+`notebooks/02_data_cleaning.ipynb`
+
+The cleaning process:
+
+- Reads original CSV files from `data/raw/`
+- Standardises column names
+- Removes empty rows and columns
+- Removes duplicate records
+- Handles missing values
+- Removes extra spaces from text values
+- Converts numeric columns to numeric data types
+- Saves cleaned files in `data/processed/`
+
+The original raw datasets are preserved and are not modified.
 ## Limitations
 
 The dataset includes reported personal-injury collisions rather than all road journeys. Predictive models estimate outcomes associated with recorded collisions, not whether a collision will occur.
