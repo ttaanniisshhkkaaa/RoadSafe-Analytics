@@ -25,7 +25,9 @@ RoadSafe-Analytics/
 │   └── processed/    # Cleaned Parquet datasets (local only)
 ├── notebooks/
 │   ├── 01_data_understanding.ipynb
-│   └── 02_data_cleaning.ipynb
+│   ├── 02_data_cleaning.ipynb
+│   ├── 03_data_integration.ipynb
+│   └── 09_dbscan.ipynb   # DBSCAN clustering (merged Stage 9 work)
 ├── src/              # Reserved for reusable Python modules
 ├── models/           # Trained models and pipelines (future stages)
 ├── reports/
@@ -117,6 +119,46 @@ These generated datasets are excluded from Git tracking. They are not included i
 - Range checks cannot guarantee that every recorded value is factually correct.
 - Model-specific imputation, categorical encoding, scaling, and feature selection will be handled in later stages using leakage-safe training pipelines.
 
+## Stage 5 — Data Integration & Feature Engineering
+
+**Status: Completed locally; GitHub integration pending.**
+
+The workflow in [03_data_integration.ipynb](notebooks/03_data_integration.ipynb) joins the cleaned 2025 STATS19 datasets at the **collision level**, preserving one record per collision instead of directly joining individual vehicle and casualty rows.
+
+### Work completed
+
+- Verified the relationships among **101,525 collisions**, **183,948 vehicle records**, and **127,883 casualty records**.
+- Aggregated vehicle and casualty counts by `collision_index`; both matched the corresponding collision-level counts with **zero mismatches**.
+- Engineered vehicle summaries: mean known driver age, count of known driver ages, and number of distinct vehicle types.
+- Engineered casualty summaries for **descriptive analysis only**: mean known casualty age, count of known casualty ages, and number of distinct casualty types.
+- Joined the summaries to the collision table using validated one-to-one left joins, preserving all **101,525 unique collision IDs**.
+- Created temporal features: `month`, `day_of_week`, `hour`, `is_weekend`, and `time_of_day`.
+- Prepared separate classification and regression tables, each with **11 selected predictors** and its respective target.
+- Excluded casualty-derived summaries and the other task's target from each predictive table to reduce target leakage.
+- Passed **10 final machine-learning dataset validation checks** and verified that all exported Parquet files match the in-memory DataFrames.
+
+### Stage 5 outputs
+
+| Local file in `data/processed/` | Rows | Columns | Intended use |
+|---|---:|---:|---|
+| `integrated_analytical.parquet` | 101,525 | 53 | Descriptive analysis and EDA; contains post-collision summaries |
+| `classification_ready.parquet` | 101,525 | 12 | Collision-severity classification |
+| `regression_ready.parquet` | 101,525 | 12 | Casualty-count regression |
+
+The initial shared predictors are `number_of_vehicles`, `speed_limit`, `road_type`, `first_road_class`, `light_conditions`, `weather_conditions`, `road_surface_conditions`, `month`, `day_of_week`, `hour`, and `is_weekend`. The targets are `collision_severity` and `number_of_casualties`, respectively. The derived `time_of_day` category is retained in the integrated analytical dataset, not in the initial modelling tables.
+
+**Reproduce Stage 5:** First run Stage 4 to create `collisions_clean.parquet`, `vehicles_clean.parquet`, and `casualties_clean.parquet`. Then restart the kernel and run every cell in `notebooks/03_data_integration.ipynb`. The notebook exports and reloads the three Stage 5 files to verify them. Generated Parquet files are excluded from Git and must be recreated locally.
+
+**Modelling caveats:** The initial predictor set supports estimating outcomes *conditional on a recorded collision*, not forecasting collision occurrence before it happens. Some attributes (such as the number of involved vehicles) may not be available pre-collision. Missing predictor values remain in the exported tables; train-only imputation, categorical encoding, train/test splitting, and final leakage review belong in the modelling stages. The 10 validation checks verify dataset structure and target preservation, not predictive accuracy.
+
+## Stage 9 — Geospatial Clustering (DBSCAN)
+
+**Status: DBSCAN implementation merged; follow-up improvements tracked separately.**
+
+The DBSCAN work explores geographical concentrations of reported collisions using latitude/longitude, haversine distance, parameter comparisons, and cluster visualizations. The reported configuration uses `eps = 0.50 km` and `min_samples = 10`. The notebook is [09_dbscan.ipynb](notebooks/09_dbscan.ipynb).
+
+Pending review items include verifying the reported 44-column input against the 43-column Stage 4 cleaned collision table, examining the geographical extent of the largest cluster, improving histogram bins, and removing blanket warning suppression. These are follow-up quality tasks; geographical density is not equivalent to traffic-adjusted risk. The wider Stage 9 clustering phase, including K-Means, is not yet marked complete.
+
 ## Machine Learning Tasks
 
 ### Classification
@@ -141,13 +183,13 @@ Estimate the number of casualties per reported collision.
 
 ## Project Status
 
-**Current Phase:** Stage 4 — Data Cleaning & Preprocessing (Implemented; documentation and GitHub review in progress)
+**Current Phase:** Stage 5 — Data Integration & Feature Engineering (completed locally; pull request pending)
 
 - [x] Stage 1: Project Planning & Problem Definition
 - [x] Stage 2: Environment Setup & GitHub Repository
 - [x] Stage 3: Data Acquisition & Understanding
 - [x] Stage 4: Data Cleaning & Preprocessing — notebook implementation and local validation
-- [ ] Stage 5: Data Integration & Feature Engineering
+- [x] Stage 5: Data Integration & Feature Engineering — notebook, validation, and local exports complete
 - [ ] Stage 6: Exploratory Data Analysis
 - [ ] Stage 7: Regression Modelling
 - [ ] Stage 8: Classification Modelling
@@ -156,7 +198,7 @@ Estimate the number of casualties per reported collision.
 - [ ] Stage 11: Interactive Dashboard Development
 - [ ] Stage 12: Final Documentation & Release
 
-**Next Phase:** Data Integration & Feature Engineering, after Stage 4 is committed and reviewed.
+**Next Phase:** Stage 6 — Exploratory Data Analysis, followed by regression and classification modelling. DBSCAN work has been merged separately, with follow-up refinements pending.
 
 ## Limitations
 
